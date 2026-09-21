@@ -1,3 +1,5 @@
+**Beating Industry Standard GPU Font Rendering by 400% using Arc Splines**
+
 основной алгоритм:
 cargo run --release --bin vector_bench
 
