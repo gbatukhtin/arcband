@@ -449,7 +449,7 @@ async fn run(event_loop: EventLoop<()>, window: Arc<Window>) {
     };
     surface.configure(&device, &config);
 
-    let font_bytes = std::fs::read("C:\\LXGWNeoZhiSong.ttf")
+    let font_bytes = std::fs::read("C:\\Windows\\Fonts\\calibri.ttf")
         .expect("null");
     let face = ttf_parser::Face::parse(&font_bytes, 0).unwrap();
 
