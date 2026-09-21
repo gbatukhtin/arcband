@@ -6,3 +6,5 @@ cargo run --release --bin vector_bench
 
 оригинальный алгоритм:
 cargo run --release --bin vector_bench_slug
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/bb2b1c61-d75f-46f8-bd59-2f3f27d80079" />
