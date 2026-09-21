@@ -1,0 +1,21 @@
+[package]
+name = "vector_font_renderer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "atlas_bench"
+path = "src/bin/atlas_bench.rs"
+
+[[bin]]
+name = "vector_bench"
+path = "src/bin/vector_bench.rs"
+
+[dependencies]
+wgpu = "0.20"
+winit = "0.29"
+pollster = "0.3"
+bytemuck = { version = "1.16", features = ["derive"] }
+ttf-parser = "0.20"
+fontdue = "0.9"
+sysinfo = "0.30"
