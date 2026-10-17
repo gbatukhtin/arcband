@@ -3,6 +3,10 @@ struct Uniforms {
     screen_size: vec2<f32>,
     zoom: f32,
     time: f32,
+    enable_animation: f32,
+    pad0: f32,
+    pad1: f32,
+    pad2: f32,
 };
 struct GpuSegment {
     kind: u32,
@@ -40,25 +44,29 @@ fn vs_main(in: VertexInput) -> VertexOutput {
         vec2<f32>(0.0, 1.0), vec2<f32>(1.0, 1.0)
     );
     let corner = corners[in.v_idx];
-    let id = f32(in.inst_idx);
-    let phase_x = id * 1.13 + id * id * 0.0001;
-    let phase_y = id * 2.37 + id * 0.05;
-    let phase_s = id * 1.71 + 0.5;
-    let move_x = sin(u.time * 1.2 + phase_x);
-    let move_y = cos(u.time * 0.95 + phase_y);
-    let pulse = sin(u.time * 1.5 + phase_s);
-    let scale_mult = 1.0 + 0.16 * pulse;
     let base_size = in.scale * u.zoom * 1000.0;
-    let size = base_size * scale_mult;
-    let offset = vec2<f32>(move_x, move_y) * (base_size * 0.10);
-    let center = in.pos * u.zoom + vec2<f32>(0.5, 0.5) * base_size + offset;
+    var size = base_size;
+    var offset = vec2<f32>(0.0, 0.0);
 
+    if (u.enable_animation > 0.5) {
+        let id = f32(in.inst_idx);
+        let phase_x = id * 1.13 + id * id * 0.0001;
+        let phase_y = id * 2.37 + id * 0.05;
+        let phase_s = id * 1.71 + 0.5;
+        let move_x = sin(u.time * 1.2 + phase_x);
+        let move_y = cos(u.time * 0.95 + phase_y);
+        let pulse = sin(u.time * 1.5 + phase_s);
+        let scale_mult = 1.0 + 0.16 * pulse;
+        size = base_size * scale_mult;
+        offset = vec2<f32>(move_x, move_y) * (base_size * 0.10);
+    }
+
+    let center = in.pos * u.zoom + vec2<f32>(0.5, 0.5) * base_size + offset;
     var gx0 = in.bbox.x;
     var gy0 = in.bbox.y;
     var gx1 = in.bbox.z;
     var gy1 = in.bbox.w;
 
-    // Fast clip rect evaluation in vertex shader
     if (in.clip.z > 0.0 && in.clip.w > 0.0) {
         let px0 = center.x + (gx0 * 0.001 - 0.5) * size;
         let px1 = center.x + (gx1 * 0.001 - 0.5) * size;
@@ -68,26 +76,22 @@ fn vs_main(in: VertexInput) -> VertexOutput {
         let cy0 = in.clip.y;
         let cx1 = in.clip.x + in.clip.z;
         let cy1 = in.clip.y + in.clip.w;
-
         if (px1 < cx0 || px0 > cx1 || py1 < cy0 || py0 > cy1) {
             out.clip_pos = vec4<f32>(0.0, 0.0, 2.0, 1.0);
             return out;
         }
-
         let inv_s = 1000.0 / size;
         if (px0 < cx0) { gx0 = (cx0 - center.x) * inv_s + 500.0; }
         if (px1 > cx1) { gx1 = (cx1 - center.x) * inv_s + 500.0; }
         if (py0 < cy0) { gy1 = 500.0 - (cy0 - center.y) * inv_s; }
         if (py1 > cy1) { gy0 = 500.0 - (cy1 - center.y) * inv_s; }
     }
-
     let glyph_x = mix(gx0, gx1, corner.x);
     let glyph_y = mix(gy1, gy0, corner.y);
     let glyph_pos = vec2<f32>(glyph_x, glyph_y);
     let norm_pos = vec2<f32>(glyph_x * 0.001, 1.0 - glyph_y * 0.001);
     let pixel_pos = center + (norm_pos - vec2<f32>(0.5, 0.5)) * size;
     let ndc = (pixel_pos / u.screen_size) * 2.0 - 1.0;
-
     out.clip_pos = vec4<f32>(ndc.x, -ndc.y, 0.0, 1.0);
     out.glyph_pos = glyph_pos;
     out.band_start = in.band_start;

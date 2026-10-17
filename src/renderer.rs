@@ -14,6 +14,7 @@ pub struct LayeredTextRenderer<const LAYERS: usize = 5> {
     pub layers_instances: [Vec<InstanceData>; LAYERS],
     pub layers_buffers: [wgpu::Buffer; LAYERS],
     pub layers_capacities: [usize; LAYERS],
+    pub animation_enabled: bool,
 }
 
 pub type TextSystem = LayeredTextRenderer<5>;
@@ -34,6 +35,8 @@ impl<const LAYERS: usize> LayeredTextRenderer<LAYERS> {
             screen_size: [1920.0, 1080.0],
             zoom: 1.0,
             time: 0.0,
+            enable_animation: 0.0,
+            _pad: [0.0; 3],
         };
         let uniform_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("arcband Screen Uniform Buffer"),
@@ -184,7 +187,16 @@ impl<const LAYERS: usize> LayeredTextRenderer<LAYERS> {
             layers_instances: std::array::from_fn(|_| Vec::with_capacity(initial_capacity)),
             layers_buffers,
             layers_capacities: [initial_capacity; LAYERS],
+            animation_enabled: false,
         }
+    }
+
+    pub fn set_animation_enabled(&mut self, enabled: bool) {
+        self.animation_enabled = enabled;
+    }
+
+    pub fn is_animation_enabled(&self) -> bool {
+        self.animation_enabled
     }
 
     pub fn queue(&mut self, section: &TextSection) {
@@ -302,6 +314,8 @@ impl<const LAYERS: usize> LayeredTextRenderer<LAYERS> {
             screen_size: [width as f32, height as f32],
             zoom: 1.0,
             time,
+            enable_animation: if self.animation_enabled { 1.0 } else { 0.0 },
+            _pad: [0.0; 3],
         };
         queue.write_buffer(&self.uniform_buffer, 0, bytemuck::cast_slice(&[uniforms]));
         for l in 0..LAYERS {
@@ -349,6 +363,8 @@ impl<const LAYERS: usize> LayeredTextRenderer<LAYERS> {
             screen_size: [width as f32, height as f32],
             zoom: 1.0,
             time,
+            enable_animation: if self.animation_enabled { 1.0 } else { 0.0 },
+            _pad: [0.0; 3],
         };
         queue.write_buffer(&self.uniform_buffer, 0, bytemuck::cast_slice(&[uniforms]));
     }

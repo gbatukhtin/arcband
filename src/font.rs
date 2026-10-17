@@ -35,6 +35,8 @@ pub struct TextUniforms {
     pub screen_size: [f32; 2],
     pub zoom: f32,
     pub time: f32,
+    pub enable_animation: f32,
+    pub _pad: [f32; 3],
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

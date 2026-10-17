@@ -95,6 +95,7 @@ impl ApplicationHandler for AppContext {
             };
             surface.configure(&device, &config);
             let mut text_renderer = TextRenderer::new(&device, surface_format);
+            text_renderer.set_animation_enabled(true);
             #[cfg(target_os = "windows")]
             let font_bytes = std::fs::read("C:\\Windows\\Fonts\\calibri.ttf").unwrap_or_else(|_| {
                 std::fs::read("C:\\Windows\\Fonts\\arial.ttf").expect("No system font found")
@@ -108,7 +109,6 @@ impl ApplicationHandler for AppContext {
                 .expect("Failed to load font");
             let chars_str: String = self.chars.iter().collect();
             text_renderer.font_system.preload_charset(font_id, &chars_str);
-
             struct ColumnConfig {
                 font_size: f32,
                 char_count: usize,
@@ -157,7 +157,6 @@ impl ApplicationHandler for AppContext {
             }
             text_renderer.set_instances(&device, &queue, 0, &instances);
             text_renderer.prepare(&device, &queue, config.width, config.height, 0.0);
-
             let (query_set, query_buffer, query_read_buffer) = if has_ts {
                 let qs = device.create_query_set(&wgpu::QuerySetDescriptor {
                     label: None,
@@ -211,7 +210,6 @@ impl ApplicationHandler for AppContext {
                     let frame_start = std::time::Instant::now();
                     let current_time = gpu.start_time.elapsed().as_secs_f32();
                     gpu.text_renderer.update_uniforms(&gpu.queue, gpu.config.width, gpu.config.height, current_time);
-
                     if let Ok(mut lock) = self.shared_title.try_lock() {
                         if !lock.is_empty() {
                             if let Some(win) = &self.window {
@@ -251,7 +249,6 @@ impl ApplicationHandler for AppContext {
                     };
                     let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
                     let mut encoder = gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
-
                     let use_ts = gpu.query_set.is_some() && !self.is_mapping;
                     let timestamp_writes = if use_ts {
                         gpu.query_set.as_ref().map(|qs| wgpu::RenderPassTimestampWrites {
