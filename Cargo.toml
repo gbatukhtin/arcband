@@ -1,21 +1,20 @@
 [package]
-name = "vector_font_renderer"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "atlas_bench"
-path = "src/bin/atlas_bench.rs"
-
-[[bin]]
-name = "vector_bench"
-path = "src/bin/vector_bench.rs"
+name = "arcband"
+version = "0.2.0"
+edition = "2024"
+description = "GPU vector font renderer via circular arcs and lines"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
-wgpu = "0.20"
-winit = "0.29"
-pollster = "0.3"
-bytemuck = { version = "1.16", features = ["derive"] }
-ttf-parser = "0.20"
-fontdue = "0.9"
+wgpu = { version = "30.0", features = ["spirv"] }
+bytemuck = { version = "1.25", features = ["derive"] }
+ttf-parser = "0.25"
+
+[dev-dependencies]
+winit = "0.30.13"
+pollster = "0.4"
 sysinfo = "0.30"
+
+[[example]]
+name = "vector_bench"
+path = "examples/vector_bench.rs"
